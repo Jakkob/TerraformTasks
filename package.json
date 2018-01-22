@@ -1,0 +1,20 @@
+{
+  "name": "tf-task",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "vsts-task-lib": "^2.1.0",
+    "q": "1.4.1",
+    "typed-rest-client": "0.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^9.3.0",
+    "@types/q": "^1.0.7"
+  }
+}

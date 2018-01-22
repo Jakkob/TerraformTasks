@@ -1,0 +1,153 @@
+{
+    "id": "0533e60b-4a48-4dda-8771-4ab3afcd5a95",
+    "name": "TerraformRunner",
+    "friendlyName": "Run Terraform Task",
+    "description": "Perform tasks using Hashicorp's Terraform Infrastructure Management Tool!",
+    "helpMarkDown": "",
+    "category": "Deploy",
+    "author": "Jacob Cleaveland",
+    "version": {
+        "Major": 0,
+        "Minor": 1,
+        "Patch": 0
+    },
+    "instanceNameFormat": "Echo $(samplestring)",
+    "groups": [
+        {
+            "name": "azureProvider",
+            "displayName": "Azure Terraform Provider Settings",
+            "isExpanded": true
+        },
+        {
+            "name": "azureBackend",
+            "displayName": "Azure Terraform Backend Settings",
+            "isExpanded": true
+        },
+        {
+            "name": "advanced",
+            "displayName": "Advanced",
+            "isExpanded": false
+        }
+    ],
+    "inputs": [
+        {
+            "name": "workingDirectory",
+            "label": "Working directory",
+            "type": "filePath",
+            "defaultValue": "$(System.DefaultWorkingDirectory)",
+            "required": false,
+            "helpMarkDown": "The directory from which to run Terraform commands. Defaults to $(System.DefaultWorkingDirectory)."
+        },
+        {
+            "name": "terraformCommands",
+            "label": "Terraform Commands",
+            "required":true,
+            "type": "multiLine",
+            "helpMarkDown": "A list of Terraform commands, one per line.\nIf using the AzureCLI Provider Credentials option, `terraform init` will be run for you."
+        },
+        {
+            "name": "useAzureCliAuth",
+            "label": "Use AzureCLI for Terraform AzureRM Provider Credentials?",
+            "type": "boolean",
+            "defaultValue": true,
+            "required": false,
+            "groupName": "azureProvider",
+            "helpMarkDown": "Checking this enables using the cross-platform AzureCLI to authenticate with the AzureRM Terraform provider."
+        },
+        {
+            "name": "terraformAzureProviderCredentials",
+            "type": "connectedService:AzureRM",
+            "label": "Azure Resource Manager Credentials",
+            "defaultValue": "",
+            "required": false,
+            "groupName": "azureProvider",
+            "visibleRule": "useAzureCliAuth = true",
+            "helpMarkDown": "Choose the Azure Resource Manager credentials to use with your Terraform AzureRM Provider."
+        },
+        {
+            "name": "useAzureTerraformBackend",
+            "label": "Use Azure Storage Terraform Backend?",
+            "type": "boolean",
+            "defaultValue": true,
+            "required": false,
+            "groupName": "azureBackend",
+            "helpMarkDown": "Checking this enables using the cross-platform AzureCLI to authenticate with the AzureRM Terraform provider."
+        },
+        {
+            "name": "terraformAzureBackendCredentials",
+            "type": "connectedService:AzureRM",
+            "label": "Azure Resource Manager Credentials",
+            "defaultValue": "",
+            "required": true,
+            "groupName": "azureBackend",
+            "visibleRule": "useAzureTerraformBackend = true",
+            "helpMarkDown": "Choose the Azure Resource Manager credentials to use with your Terraform AzureRM Provider."
+        },
+        {
+            "name": "terraformStateStorageAccount",
+            "type": "pickList",
+            "label": "Azure storage account used for Terraform remote state backend.",
+            "defaultValue": "",
+            "required": true,
+            "groupName": "azureBackend",
+            "visibleRule": "useAzureTerraformBackend = true",
+            "helpMarkDown": "The Azure storage account that is currently being used to host the Terraform remote state backend for this run.",
+            "properties": {
+                "EditableOptions": "True"
+            }
+        },
+        {
+            "name": "containerName",
+            "type": "pickList",
+            "label": "Container Name",
+            "properties": {
+                "EditableOptions": "True"
+            },
+            "defaultValue": "",
+            "required": true,
+            "groupName": "azureBackend",
+            "visibleRule": "useAzureTerraformBackend = true",
+            "helpMarkDown": "The name of the container where the remote state files are stored."
+        },
+        {
+            "name": "stateFileName",
+            "label": "Terraform state file name",
+            "type": "string",
+            "defaultValue": "",
+            "required": true,
+            "groupName": "azureBackend",
+            "visibleRule": "useAzureTerraformBackend = true",
+            "helpMarkDown": "The name of the remote state file to use."
+        },
+        {
+            "name": "installTerraform",
+            "type": "boolean",
+            "label": "Install Terraform?",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "If checked, the task will install an appropriate version of Terraform and add it to the build user's path.\nTo update the Terraform install, set the build variable *UPDATE_TERRAFORM_INSTALL* to a non-null value.",
+            "groupName": "advanced"
+        }
+    ],
+    "dataSourceBindings": [
+        {
+            "target": "terraformStateStorageAccount",
+            "endpointId": "$(terraformAzureProviderCredentials)",
+            "dataSourceName": "AzureStorageAccountRM"
+        },
+        {
+            "target": "containerName",
+            "endpointId": "$(terraformAzureBackendCredentials)",
+            "dataSourceName": "AzureStorageContainer",
+            "resultTemplate": "{ \"Value\" : \"{{ Name }}\", \"DisplayValue\" : \"{{ Name }}\" }",
+            "parameters": {
+              "storageAccount": "$(terraformStateStorageAccount)"
+            }
+          }
+    ],
+    "execution": {
+        "Node": {
+            "target": "main.js"
+        }
+    }
+}
