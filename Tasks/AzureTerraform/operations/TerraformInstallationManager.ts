@@ -1,13 +1,6 @@
 import * as httpm from 'typed-rest-client/HttpClient';
 import * as cheerio from 'cheerio';
-import { version } from 'punycode';
 import MachineCharacteristics from '../models/MachineCharacteristics';
-
-let httpc: httpm.HttpClient = new httpm.HttpClient('vsts-node-api');
-
-export enum OS {
-
-}
 
 export default class TerraformInstallationManager {
     private machineDetails: MachineCharacteristics;
@@ -17,6 +10,7 @@ export default class TerraformInstallationManager {
     }
 
     public async downloadTerraform() {
+        let httpc: httpm.HttpClient = new httpm.HttpClient('vsts-node-api');
         let versionsResponse: httpm.HttpClientResponse = await httpc.get('https://releases.hashicorp.com/terraform');
 
         let versions: Array<string> = [];
@@ -32,6 +26,9 @@ export default class TerraformInstallationManager {
         
         let downloadLink: string = '';
         parser = cheerio.load(await exeResponse.readBody());
-        parser('a').f
+        parser('a').each((index, element) => {
+            let content: string = parser(element).text();
+            if(content.includes(this.machineDetails.OperatingSystem))
+        });
     }
 }
